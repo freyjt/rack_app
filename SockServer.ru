@@ -1,5 +1,7 @@
 #\ -w -p 8282 -E production
 use Rack::Reloader, 0
+
+# Serves static files, someday separate this logic
 use Rack::Static, :urls => ["/testsite"]
 
 require 'faye/websocket'
@@ -16,7 +18,11 @@ class MyApp
   def call(env)
     if Faye::WebSocket.websocket?(env)
       ws = Faye::WebSocket.new(env)
+      ws.on :open do |event|
+        puts "New websocket connection"
+      end
       ws.on :message do |event|
+        puts "data recieved on ws: #{event.data}"
         ws.send generate_response(event.data)
       end
       ws.on :close do |event|
