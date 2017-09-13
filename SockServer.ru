@@ -1,18 +1,23 @@
 #\ -w -p 8282 -E production
 use Rack::Reloader, 0
+use Rack::Static, :urls => ["/testsite"]
 
 require 'faye/websocket'
 Faye::WebSocket.load_adapter('thin')
 
+COLORS = ['red', 'blue', 'green', 'yellow', 'orange']
+
 class MyApp
-  COLORS = ['red', 'blue', 'green', 'yellow', 'orange']
+
+  def generate_response(data)
+    COLORS.sample
+  end
 
   def call(env)
     if Faye::WebSocket.websocket?(env)
       ws = Faye::WebSocket.new(env)
       ws.on :message do |event|
-        puts "DATA: #{event.data}"
-        ws.send(COLORS.sample)
+        ws.send generate_response(event.data)
       end
       ws.on :close do |event|
         puts "Socket closed"
