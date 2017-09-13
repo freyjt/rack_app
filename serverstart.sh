@@ -1,3 +1,3 @@
 #!/bin/bash -ex
 
-rackup SockServer.su &
+rackup SockServer.ru &
