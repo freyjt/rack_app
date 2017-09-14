@@ -13,8 +13,8 @@ function WSClickHandler(click_e, caller) {
     this.ws.send(data)
   }
   this.ws.onmessage = function(ws_e) {
-    console.log(e.data);
-    caller.style.backgroundColor = e.data
+    console.log(ws_e.data);
+    caller.style.backgroundColor = ws_e.data
   }
   this.ws.onclose = function(ws_e) {
     destroy_(this)
