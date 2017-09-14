@@ -7,7 +7,8 @@ function destroy_(object) {
 }
 
 function WSClickHandler(click_e, caller) {
-  this.ws = get_connection
+  this.ws = get_connection();
+  console.log(this.ws);
   this.send = function(data) {
     this.ws.send(data)
   }
