@@ -1,4 +1,4 @@
-#\ -w -p 8282 -E production
+#\ -w -E production
 use Rack::Reloader, 0
 
 # Serves static files, someday separate this logic

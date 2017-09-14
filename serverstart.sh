@@ -1,3 +1,5 @@
 #!/bin/bash -ex
 
-rackup SockServer.ru &
+PORT=8888
+
+rackup -p $PORT SockServer.ru &
