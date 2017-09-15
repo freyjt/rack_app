@@ -1,6 +1,8 @@
+var CONNECT_URL = "ws://localhost:8888"
+
+
 function get_connection() {
   return new WebSocket("ws://localhost:8888")
-  
 }
 
 function wait_for_readystate(ws) {
@@ -16,30 +18,36 @@ function destroy_(object) {
 }
 
 function WSClickHandler(click_e, caller) {
+  this.get_connection = function() {
+    return new WebSocket(CONNECT_URL)
+  }
   // Websocket may not be ready by the time we call this
   this.send = function(data) {
     this.ws.send(data)
   }
   this.get_ready_state = function() { return this.ws.readyState }
   // This only works if we have a callback
-  this.wait_for_readystate = function() {
+  ths = this
+  this.wait_for_readystate = function(callback) {
     console.log("Checking Readystate: " + this.ws.readyState)
     setTimeout( function() {
-      if(this.ws.readyState === 1) {
+      if(ths.ws.readyState === 1) {
         console.log("Websocket ready")
+        console.log(callback);
+        callback();
         return;
       }
-      else this.wait_for_readystate();
+      else ths.wait_for_readystate(callback);
     }, 5)
   }
   //constructor
-  this.ws = get_connection();
-  this.wait_for_readystate();
+  this.ws = this.get_connection();
+  this.wait_for_readystate( function() { ths.send("Connection made") } );
 
-  console.log(this.ws);
+  this.changer = caller
   this.ws.onmessage = function(ws_e) {
     console.log(ws_e.data);
-    caller.style.backgroundColor = ws_e.data
+    ths.changer.style.backgroundColor = ws_e
   }
   this.ws.onclose = function(ws_e) {
     console.log("Lost Websocket Connection")
@@ -48,7 +56,7 @@ function WSClickHandler(click_e, caller) {
 }
 
 
-function main() {
+function click_main() {
   var click = document.getElementById('click')
   var ws = null
 
@@ -56,11 +64,9 @@ function main() {
     if(ws === null) ws = new WSClickHandler(e, this)
     else(console.log("Websocket already active"))
     console.log("Ready state " + ws.get_ready_state())
-    wait_for_readystate(ws);
+    bg_color = this.style.backgroundColor
+    ws.wait_for_readystate(function() {ws.send("Here's a message " + bg_color)});
     console.log("After Ready State: " + ws.get_ready_state())
-    ws.send("Here's a message " + this.style.backgroundColor);
   }
 }
 
-
-window.onload = function() { main(); }
