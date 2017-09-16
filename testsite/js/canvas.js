@@ -1,5 +1,4 @@
 
-
 function Dot(loc, rad, fillStyle) {  
   this.pos = loc
   this.rad = rad
@@ -17,7 +16,6 @@ Dot.prototype.draw = function(ctx) {
   }
   ctx.stroke();
 }
-
 
 function Flower(loc, rad) {
   this.pos = loc
@@ -51,6 +49,7 @@ Flower.prototype.toString = function() {
 
 // Constructor
 function CanvasApp(div_id) {
+  var ws = new WebSocket("http://localhost:8889")
   var can = document.getElementById(div_id);
   this.h = parseInt(can.style.height);
   this.w = parseInt(can.style.width);
@@ -70,9 +69,15 @@ function CanvasApp(div_id) {
     var pos = this.getRandPos();
     d_l.push(shapeSelector(pos, rad));
   }
-  for(var i in d_l) {
-    d_l[i].draw(this.ctx);
-  } 
+  this.renderView(d_l);
+  // Set us up the canvas
+  caller = this
+  can.onmousemove = function(e) {
+    d_l = []
+    caller.renderView(d_l)
+    caller.ws.send("View Request");
+  }
+
 }
 CanvasApp.prototype.getRandPos = function() {
   return { x: Math.random() * this.w, y: Math.random() * this.h };
@@ -81,7 +86,7 @@ CanvasApp.prototype.renderView = function(drawables) {
   this.ctx.fillStyle = "#ffffff";
   this.ctx.fillRect(0, 0, this.w, this.h)
   for(var i in drawables) {
-    drawables[i].draw()
+    drawables[i].draw(this.ctx)
   }
 }
 
