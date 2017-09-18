@@ -1,4 +1,18 @@
 
+// x,y vector with math and builder pattern
+function Pos(x, y) {
+  this.x = x;
+  this.y = y;
+}
+Pos.prototype.add = function(pos) {
+  this.x = this.x + pos.x;
+  this.y = this.y + pos.y;
+  return this;
+}
+
+
+
+
 function Dot(loc, rad, fillStyle) {  
   this.pos = loc
   this.rad = rad
@@ -17,14 +31,69 @@ Dot.prototype.draw = function(ctx) {
   ctx.stroke();
 }
 
+
+
+
+// start_pos is given to be the point one of the diamond, which all other measurements will be taken agianst
+// start_pos and rot need to coincide, @TODO make this not true rot ^ dist implies start
+function Diamond(pos, start_dist, len, wid, len_to_w, rot) {
+  var half_wid = wid / 2;
+  var wing_theta = Math.atan(half_wid / len_to_w)
+  var wing_hyp = Math.cos(wing_theta) * len_to_w
+  //this doesn't have to be a property
+  if(typeof(rot) != "number") { rot = 0 }
+  start_vec = new Pos( Math.cos(rot) * start_dist, -(Math.sin(rot) * start_dist));
+  this.points = []
+  // First calc all things from zero, then transpose by adding the start pos to each
+  //   @TODO Shouldn't something be negative here?
+  t_n = 0;                h_n = 0;        this.points.push(pos_closure().add(start_vec).add(pos))
+  t_n = rot - wing_theta; h_n = wing_hyp; this.points.push(pos_closure().add(start_vec).add(pos))
+  t_n = rot;              h_n = len;      this.points.push(pos_closure().add(start_vec).add(pos))
+  t_n = rot + wing_theta; h_n = wing_hyp; this.points.push(pos_closure().add(start_vec).add(pos))
+
+  function pos_closure() {
+    return new Pos( Math.cos(t_n) * h_n, -(Math.sin(t_n) * h_n))
+  }
+}
+Diamond.prototype.draw = function(ctx) {
+  ctx.strokeStyle = "#000000";
+  ctx.beginPath();
+  f_p = this.points[0];
+  ctx.moveTo(f_p.x, f_p.y);
+  for(var i in this.points) {
+    f_p = this.points[i];
+    ctx.lineTo(f_p.x, f_p.y)
+  }
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function DFlower(loc, rad) {
+  this.bits = [];
+  this.bits.push(new Dot(loc, rad / 4, "purple"));
+  var d_len = rad;
+  var d_d = rad / 4;
+  var d_w = rad / 2;
+  var d__l = (3*d_len)/4;
+  var rot = 45;
+  
+  for(var i = 0; i < (360 / rot); i++) {
+    this.bits.push(new Diamond(loc, d_d, d_len, d_w, d__l, rot * i))
+  } 
+}
+DFlower.prototype.draw = function(ctx) {
+  for(var i in this.bits) {
+    this.bits[i].draw(ctx);
+  }
+}
+
+
 function Flower(loc, rad) {
   this.pos = loc
   this.rad = rad
 }
-// is angle in rads or degrees?
+//theta is given in rads
 Flower.prototype.resolvePos = function(angle) {
-  //(negative) change y = hyp * sin(theta)
-  //(positive) change x = hyp * cos(theta)
   y_st = this.pos.y
   x_st = this.pos.x
   var rad = this.rad 
@@ -49,7 +118,7 @@ Flower.prototype.toString = function() {
 
 // Constructor
 function CanvasApp(div_id) {
-  var ws = new WebSocket("http://localhost:8889")
+  this.ws = new WebSocket("ws://localhost:8889")
   var can = document.getElementById(div_id);
   this.h = parseInt(can.style.height);
   this.w = parseInt(can.style.width);
@@ -64,23 +133,39 @@ function CanvasApp(div_id) {
     d_l.push(new Dot(pos, rad));
   }
 
-  for(i = 0; i < 10000; i++) {
+  for(i = 0; i < 10; i++) {
     var rad = (Math.random() * 10) + 10;
     var pos = this.getRandPos();
-    d_l.push(shapeSelector(pos, rad));
+    d_l.push(new DFlower(pos, rad));
+  //  d_l.push(shapeSelector(pos, rad));
   }
   this.renderView(d_l);
   // Set us up the canvas
   caller = this
-  can.onmousemove = function(e) {
+  can.onclick = function(e) {
     d_l = []
     caller.renderView(d_l)
-    caller.ws.send("View Request");
+    var v_req = { "Purpose": "Request View", "height": caller.h, "width": caller.w };
+    caller.ws.send(JSON.stringify(v_req));
   }
-
+  this.ws.onmessage = function(e) {
+    console.log(e.data)
+    var objs = JSON.parse(e.data);
+    // Assumes objs is an array
+    for(var i in objs) {
+      var obj = objs[i]
+      var pos = obj.pos
+      var rad = obj.rad
+      var fill = obj.fill
+      if(obj.type == "Flower") { var shape = new Flower(pos, rad, fill) }
+      else{ var shape = new Dot(pos, rad, fill) }
+      d_l.push(shape);
+    }
+    caller.renderView(d_l);
+  }
 }
 CanvasApp.prototype.getRandPos = function() {
-  return { x: Math.random() * this.w, y: Math.random() * this.h };
+  return new Pos(Math.random() * this.w, Math.random() * this.h);
 }
 CanvasApp.prototype.renderView = function(drawables) {
   this.ctx.fillStyle = "#ffffff";

@@ -4,6 +4,7 @@ use Rack::Reloader, 0
 # Serves static files, someday separate this logic
 use Rack::Static, :urls => ["/testsite"]
 
+require 'json'
 require 'faye/websocket'
 Faye::WebSocket.load_adapter('thin')
 
@@ -11,8 +12,24 @@ COLORS = ['red', 'blue', 'green', 'yellow', 'orange']
 
 class MyApp
 
-  def generate_response(data)
+  def random_color()
     COLORS.sample
+  end
+
+  def random_pos(h, w)
+    return { :x => rand * w, :y => rand * h }
+  end
+
+  def generate_shapes(h, w, count)
+    shapes = []
+    (0..(count - 1)).each do 
+      shapes << { :pos =>  random_pos(h, w),
+                  :fill => random_color(),
+                  :rad => (rand() * 10 + 5),
+                  :type => (rand() < 0.5) ? "Flower" : "Dot" }
+      
+    end
+    return shapes
   end
 
   def call(env)
@@ -22,8 +39,9 @@ class MyApp
         puts "New websocket connection"
       end
       ws.on :message do |event|
-        puts "data recieved on ws: #{event.data}"
-        ws.send generate_response(event.data)
+        puts event.data
+        dat = JSON.parse event.data
+        ws.send JSON.generate(generate_shapes(dat["height"], dat["width"], 299))
       end
       ws.on :close do |event|
         puts "Socket closed"
