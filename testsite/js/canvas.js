@@ -32,20 +32,15 @@ Dot.prototype.draw = function(ctx) {
 }
 
 
-
-
 // start_pos is given to be the point one of the diamond, which all other measurements will be taken agianst
 // start_pos and rot need to coincide, @TODO make this not true rot ^ dist implies start
 function Diamond(pos, start_dist, len, wid, len_to_w, rot) {
   var half_wid = wid / 2;
   var wing_theta = Math.atan(half_wid / len_to_w)
   var wing_hyp = Math.cos(wing_theta) * len_to_w
-  //this doesn't have to be a property
   if(typeof(rot) != "number") { rot = 0 }
-  start_vec = new Pos( Math.cos(rot) * start_dist, -(Math.sin(rot) * start_dist));
+  start_vec = new Pos( (Math.cos(rot) * start_dist), -(Math.sin(rot) * start_dist));
   this.points = []
-  // First calc all things from zero, then transpose by adding the start pos to each
-  //   @TODO Shouldn't something be negative here?
   t_n = 0;                h_n = 0;        this.points.push(pos_closure().add(start_vec).add(pos))
   t_n = rot - wing_theta; h_n = wing_hyp; this.points.push(pos_closure().add(start_vec).add(pos))
   t_n = rot;              h_n = len;      this.points.push(pos_closure().add(start_vec).add(pos))
@@ -62,11 +57,12 @@ Diamond.prototype.draw = function(ctx) {
   ctx.moveTo(f_p.x, f_p.y);
   for(var i in this.points) {
     f_p = this.points[i];
-    ctx.lineTo(f_p.x, f_p.y)
+    ctx.lineTo(f_p.x, f_p.y);
   }
   ctx.closePath();
   ctx.stroke();
 }
+
 
 function DFlower(loc, rad) {
   this.bits = [];
@@ -78,7 +74,7 @@ function DFlower(loc, rad) {
   var rot = 45;
   
   for(var i = 0; i < (360 / rot); i++) {
-    this.bits.push(new Diamond(loc, d_d, d_len, d_w, d__l, rot * i))
+    this.bits.push(new Diamond(loc, d_d, d_len, d_w, d__l, d_to_rad(rot * i)))
   } 
 }
 DFlower.prototype.draw = function(ctx) {
@@ -173,6 +169,11 @@ CanvasApp.prototype.renderView = function(drawables) {
   for(var i in drawables) {
     drawables[i].draw(this.ctx)
   }
+}
+
+
+function d_to_rad(d) {
+  return (Math.PI / 180) * d;
 }
 
 function randomColor() {
