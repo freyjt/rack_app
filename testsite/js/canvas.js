@@ -65,18 +65,6 @@ function getRadians(degrees) {
   return (Math.PI * degrees) / 180;
 }
 
-function IntegerRad() {
-   this.memo = []
-   var p_over = Math.PI / 180
-   for(var i = 0; i < 360; i++)
-      this.memo.push(p_over * i)
-}
-IntegerRad.prototype.fromD = function(d) { 
-  if(Number.isInteger(d))
-    return this.memo[d % 360];
-  else return (Math.PI / 180) * d
-}
-
 function randomColor() {
   var colors = ["blue", "green", "pink", "yellow", "orange", "red", "dark-red", "purple"]
   return colors[Math.floor(Math.random() * colors.length)]
