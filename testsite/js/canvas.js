@@ -27,8 +27,6 @@ function DFlower(loc, rad, petal_f, stamen_f, spin) {
   this.total_spin = 0.0;
   this.radianCache = new IntegerRad()
   this.formPetals();
-
-  
 }
 DFlower.prototype.draw = function(ctx) {
   this.dot.draw(ctx)

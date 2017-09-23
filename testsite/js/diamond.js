@@ -1,6 +1,33 @@
+
+// We can memo length too, but idk if that makes sense just yet
+// @NOTE This isn't premature. Excuses aside, we were getting some lag on the runs,
+//   ideally this makes it better?
+function Trig( ) {
+  this.sin = []
+  this.cos = [] 
+  for(var i = 0; i < 360; i++) {
+    this.sin.push(Math.sin(i));
+    this.cos.push(Math.cos(i));
+  }
+}
+Trig.prototype.sin = function(d) {
+  if(Number.isInteger(d))
+    return this.sin[d % 360];
+  else
+    return Math.sin(d);
+}
+Trig.prototype.cos = function(d) {
+  if(Number.isInteger(d))
+    return this.cos[d % 360];
+  else
+    return Math.sin(d);
+}
+
+
 // start_pos is given to be the point one of the diamond, which all other measurements will be taken agianst
 // start_pos and rot need to coincide, @TODO make this not true rot ^ dist implies start
 function Diamond(pos, start_dist, len, wid, len_to_w, rot, fillStyle) {
+  static trig = new Trig();
   var half_wid = wid / 2;
   var wing_theta = Math.atan(half_wid / len_to_w)
   var wing_hyp = Math.cos(wing_theta) * len_to_w
@@ -16,7 +43,7 @@ function Diamond(pos, start_dist, len, wid, len_to_w, rot, fillStyle) {
   if(typeof(fillStyle) == "function") this.fillStyle = fillStyle();
 
   function pos_closure() {
-    return new Pos( Math.cos(t_n) * h_n, -(Math.sin(t_n) * h_n))
+    return new Pos( This.trig.cos(t_n) * h_n, -(This.trig.sin(t_n) * h_n))
   }
 }
 Diamond.prototype.draw = function(ctx) {
@@ -33,3 +60,4 @@ Diamond.prototype.draw = function(ctx) {
   ctx.fill();
   ctx.stroke();
 }
+
