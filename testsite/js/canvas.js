@@ -25,7 +25,6 @@ function DFlower(loc, rad, petal_f, stamen_f, spin) {
   this.spin = spin
   if(typeof(this.spin) != "number") this.spin = 0;
   this.total_spin = 0.0;
-  this.radianCache = new IntegerRad()
   this.formPetals();
 
   
@@ -43,7 +42,7 @@ DFlower.prototype.update = function( ) {
 DFlower.prototype.formPetals = function() {
   this.petals = [];
   for(var i = 0; i < (360 / this.rot); i++) {
-    this.petals.push(new Diamond(this.loc, this.d_d, this.d_len, this.d_w, this.d__l, this.radianCache.fromD((this.rot * i) + this.total_spin), this.petal_f))
+    this.petals.push(new Diamond(this.loc, this.d_d, this.d_len, this.d_w, this.d__l, getRadians((this.rot * i) + this.total_spin), this.petal_f))
   } 
 }
 
@@ -122,16 +121,21 @@ CanvasApp.prototype.iterateView = function() {
 }
 
 
+
+function getRadians(degrees) {
+  return (Math.PI * degrees) / 180;
+}
+
 function IntegerRad() {
    this.memo = []
    var p_over = Math.PI / 180
    for(var i = 0; i < 360; i++)
-      memo.push(p_over * i)
+      this.memo.push(p_over * i)
 }
 IntegerRad.prototype.fromD = function(d) { 
-  if(Number.isInteger(d)
+  if(Number.isInteger(d))
     return this.memo[d % 360];
-  else return (Math.PI / 180) * d }
+  else return (Math.PI / 180) * d
 }
 
 function randomColor() {
