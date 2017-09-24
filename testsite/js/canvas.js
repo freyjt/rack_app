@@ -14,7 +14,7 @@ function CanvasApp(div_id) {
   for(i = 0; i < 1; i++) {
     var rad = (Math.random() * 20) + 10;
     var pos = this.getRandPos();
-    this.d_l.push(new DFlower(pos, rad, randomColor(), randomColor(), num_bet_mag_and_opp(10)));
+    this.d_l.push(new Flower(pos, rad, randomColor(), randomColor(), num_bet_mag_and_opp(10)));
   }
 
   this.lastClick = null
@@ -50,7 +50,10 @@ CanvasApp.prototype.iterateView = function() {
     //null checks are a smell
     if(this.d_l[i].addUpdate != null && this.lastClick != null) {
        this.d_l[i].addUpdate( chasePoint(this.lastClick, 5) );
+      console.log(">>>>>>>>>CHEVRON");
     } else {
+
+      console.log("I did not add a callback")
       // holding on to this because idk why
     }
   }
