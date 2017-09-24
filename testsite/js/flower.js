@@ -26,7 +26,6 @@ Flower.prototype.draw = function(ctx) {
 Flower.prototype.update = function() {
   this.totalSpin = this.totalSpin + this.spin
   for(var i = 0; i < this.updates.length; i++) {
-    console.log(this.updates.length)
     this.updates[i](this);
   }
   this.updates = []

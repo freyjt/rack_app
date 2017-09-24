@@ -7,17 +7,17 @@ function CanvasApp(div_id) {
   this.w = parseInt(can.style.width);
   can.height = this.h;
   can.width = this.w;
-  this.d_l = []
+  this.avatar = []
   can.style.border = "2px solid blue";
   this.ctx = can.getContext('2d');
 
-  for(i = 0; i < 1; i++) {
-    var rad = (Math.random() * 20) + 10;
-    var pos = this.getRandPos();
-    this.d_l.push(new Flower(pos, rad, randomColor(), randomColor(), num_bet_mag_and_opp(10)));
-  }
+  //starting pos of avatar
+  var pos = this.getRandPos();
+  var rad = 20
+  this.avatar = new DFlower(pos, rad, randomColor(), randomColor(), 10);
 
-  this.lastClick = null
+  this.lastClick = null;
+  this.genDots(20);
 
   caller = this
   caller.iterateView();
@@ -38,29 +38,31 @@ CanvasApp.prototype.getRandPos = function() {
 CanvasApp.prototype.renderView = function() {
   this.ctx.fillStyle = "#ffffff";
   this.ctx.fillRect(0, 0, this.w, this.h)
-  for(var i in this.d_l) {
-    this.d_l[i].draw(this.ctx)
-  }
+  this.avatar.draw(this.ctx)
+  for(var i in this.dots) this.dots[i].draw(this.ctx);
 }
 CanvasApp.prototype.setLastClick = function(clickPos) {
   this.lastClick = clickPos;
 }
 CanvasApp.prototype.iterateView = function() {
-  for(var i in this.d_l) {
-    //null checks are a smell
-    if(this.d_l[i].addUpdate != null && this.lastClick != null) {
-       this.d_l[i].addUpdate( chasePoint(this.lastClick, 5) );
-      console.log(">>>>>>>>>CHEVRON");
-    } else {
-
-      console.log("I did not add a callback")
-      // holding on to this because idk why
-    }
+  try {
+     if(this.lastClick != null)
+       this.avatar.addUpdate( chasePoint(this.lastClick, 5) );
+  } catch(e) {
+    console.log("I could not add a callback")
   }
-  for(var i in this.d_l) {
-    if(typeof(this.d_l[i].update) == "function") this.d_l[i].update();
+  if(typeof(this.avatar.update) == "function") this.avatar.update();
+}
+CanvasApp.prototype.genDots = function(number) {
+  this.dots = [];
+  for(var i = 0; i < number; i++) {
+    var colo = randomColor();
+    var size = magnitudeNumber(15);
+    var pos = this.getRandPos();
+    this.dots.push( new Dot(pos, size, colo) );
   }
 }
+
 
 function getRadians(degrees) {
   return (Math.PI * degrees) / 180;
@@ -76,9 +78,8 @@ function shapeSelector(pos, rad) {
   else { return new Flower(pos, rad) }
 }
 
-function num_bet_mag_and_opp(mag) {
+function magnitudeNumber(mag) {
   num = Math.ceil((Math.random() * mag) + 1)
-  if(Math.random() < .5) num = num * -1;
   return num
 }
 
@@ -99,6 +100,25 @@ function chasePoint(chasePos, moveDist) {
     } 
     caller.pos = new Pos(new_x, new_y)
   }
+}
+
+// we assume both are round
+function hitCheckAvatar(avatar, list) {
+   // We need to eliminate from the list. does passing it allow us to do that?
+   av_pos = avatar.pos
+   av_rad = avatar.rad
+
+   for(var i = list.length - 1; i >= 0; i++) {
+     if(hitCheckTwo(av_pos, av_rad, list[i].pos, list[i].rad))
+       list.splice(i, 1);
+   }
+}
+function hitCheckTwo(firstPos, firstRad, secondPos, secondRad) {
+   var totalDist = firstRad + secondRad;
+   var yDist = secondPos.y - firstPos.y
+   var xDist = firstPos.x - secondPos.y
+   var betweenDist = Math.sqrt(Math.pow(yDist, 2) + Math.pow(xDist, 2));
+   return betweenDist > totalDist
 }
 
 // thank you to
