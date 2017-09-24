@@ -1,5 +1,6 @@
 
 function Dot(loc, rad, fillStyle) {  
+  console.log("Brand new dot");
   this.pos = loc
   this.rad = rad
   if(fillStyle != null) { this.fillStyle = fillStyle }

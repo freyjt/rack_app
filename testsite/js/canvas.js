@@ -48,12 +48,10 @@ CanvasApp.prototype.setLastClick = function(clickPos) {
 CanvasApp.prototype.iterateView = function() {
   for(var i in this.d_l) {
     //null checks are a smell
-    console.log(this.lastClick)
     if(this.d_l[i].addUpdate != null && this.lastClick != null) {
-       console.log("I am a>>>>>>>>>>>><<<<<<<<<<<<<")
        this.d_l[i].addUpdate( chasePoint(this.lastClick, 5) );
     } else {
-       console.log(" I am not adding a function" );
+      // holding on to this because idk why
     }
   }
   for(var i in this.d_l) {
@@ -87,8 +85,7 @@ function chasePoint(chasePos, moveDist) {
   // update this.pos on the caller object
   //   we could pass a this to this function if we can't get this working like this.
   return function(caller) {
-    console.log(" chasePoint called ");
-    p_theta = Math.atan2(caller.pos.x - chasePos.x, caller.pos.y - chasePos.y);
+    p_theta = Math.atan2(caller.pos.y - chasePos.y, chasePos.x - caller.pos.x);
     distance = Math.sqrt(Math.pow(caller.pos.x - chasePos.x, 2) + Math.pow(caller.pos.y - chasePos.y, 2))
     if(distance < moveDist) {
       new_x = chasePos.x;
