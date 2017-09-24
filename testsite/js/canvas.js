@@ -16,13 +16,21 @@ function CanvasApp(div_id) {
     var pos = this.getRandPos();
     this.d_l.push(new DFlower(pos, rad, randomColor(), randomColor(), num_bet_mag_and_opp(10)));
   }
+
+  this.lastClick = null
+
   caller = this
   caller.iterateView();
   caller.renderView();
   intId = setInterval(function() {
-    caller.iterateView()
+    caller.iterateView();
     caller.renderView();
   }, interval_ms);
+
+
+  can.onmouseup = function(e) {
+    caller.lastClick = getXY(e, this);
+  }
 }
 CanvasApp.prototype.getRandPos = function() {
   return new Pos(Math.random() * this.w, Math.random() * this.h);
@@ -34,15 +42,24 @@ CanvasApp.prototype.renderView = function() {
     this.d_l[i].draw(this.ctx)
   }
 }
+CanvasApp.prototype.setLastClick = function(clickPos) {
+  this.lastClick = clickPos;
+}
 CanvasApp.prototype.iterateView = function() {
+  for(var i in this.d_l) {
+    //null checks are a smell
+    console.log(this.lastClick)
+    if(this.d_l[i].addUpdate != null && this.lastClick != null) {
+       console.log("I am a>>>>>>>>>>>><<<<<<<<<<<<<")
+       this.d_l[i].addUpdate( chasePoint(this.lastClick, 5) );
+    } else {
+       console.log(" I am not adding a function" );
+    }
+  }
   for(var i in this.d_l) {
     if(typeof(this.d_l[i].update) == "function") this.d_l[i].update();
   }
-
-  var x_y = 
-  
 }
-
 
 function getRadians(degrees) {
   return (Math.PI * degrees) / 180;
@@ -66,14 +83,21 @@ function num_bet_mag_and_opp(mag) {
 
 // Assume that the object in question has a 'pos' property
 //  maxDist would be nice to be metho
-function chasesPoint(chasePos, moveDist) {
+function chasePoint(chasePos, moveDist) {
   // update this.pos on the caller object
-  return function() {
-    // point angle
-    p_theta = Math.atan2(this.pos.x - chasePos.x, this.pos.y - chasePos.y);
-    new_x = this.pos.x + (Math.cos(p_theta) * moveDist)
-    new_y = this.pos.y - (Math.sin(p_theta) * moveDist)
-    this.pos = new Pos(new_x, new_y)
+  //   we could pass a this to this function if we can't get this working like this.
+  return function(caller) {
+    console.log(" chasePoint called ");
+    p_theta = Math.atan2(caller.pos.x - chasePos.x, caller.pos.y - chasePos.y);
+    distance = Math.sqrt(Math.pow(caller.pos.x - chasePos.x, 2) + Math.pow(caller.pos.y - chasePos.y, 2))
+    if(distance < moveDist) {
+      new_x = chasePos.x;
+      new_y = chasePos.y;
+    } else {
+      new_x = caller.pos.x + (Math.cos(p_theta) * moveDist)
+      new_y = caller.pos.y - (Math.sin(p_theta) * moveDist)
+    } 
+    caller.pos = new Pos(new_x, new_y)
   }
 }
 
