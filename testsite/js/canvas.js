@@ -15,8 +15,8 @@ function CanvasApp(div_id) {
   var pos = this.getRandPos();
   var rad = 20
   this.avatar = new DFlower(pos, rad, randomColor(), randomColor(), 10);
+  this.lastClick = pos; // Hacky this sets the thing to move to its own pos
 
-  this.lastClick = null;
   this.genDots(20);
 
   caller = this
@@ -26,7 +26,6 @@ function CanvasApp(div_id) {
     caller.iterateView();
     caller.renderView();
   }, interval_ms);
-
 
   can.onmouseup = function(e) {
     caller.lastClick = getXY(e, this);
@@ -45,13 +44,18 @@ CanvasApp.prototype.setLastClick = function(clickPos) {
   this.lastClick = clickPos;
 }
 CanvasApp.prototype.iterateView = function() {
+  hitCheckAvatar(this.avatar, this.dots);
   try {
-     if(this.lastClick != null)
-       this.avatar.addUpdate( chasePoint(this.lastClick, 5) );
+     if(this.lastClick != null) this.avatar.addUpdate( chasePoint(this.lastClick, 5) );
   } catch(e) {
     console.log("I could not add a callback")
   }
-  if(typeof(this.avatar.update) == "function") this.avatar.update();
+  try {
+    this.avatar.update();
+  } catch(e) {
+    console.log("I could not update this thing");
+  }
+  if(this.dots.length == 0) this.genDots(20);
 }
 CanvasApp.prototype.genDots = function(number) {
   this.dots = [];
@@ -108,17 +112,16 @@ function hitCheckAvatar(avatar, list) {
    av_pos = avatar.pos
    av_rad = avatar.rad
 
-   for(var i = list.length - 1; i >= 0; i++) {
+   for(var i = list.length - 1; i >= 0; i--) {
      if(hitCheckTwo(av_pos, av_rad, list[i].pos, list[i].rad))
        list.splice(i, 1);
    }
 }
 function hitCheckTwo(firstPos, firstRad, secondPos, secondRad) {
    var totalDist = firstRad + secondRad;
-   var yDist = secondPos.y - firstPos.y
-   var xDist = firstPos.x - secondPos.y
-   var betweenDist = Math.sqrt(Math.pow(yDist, 2) + Math.pow(xDist, 2));
-   return betweenDist > totalDist
+   var yDist = secondPos.y - firstPos.y;
+   var xDist = firstPos.x - secondPos.x;
+   return Math.sqrt(Math.pow(yDist, 2) + Math.pow(xDist, 2)) < totalDist
 }
 
 // thank you to

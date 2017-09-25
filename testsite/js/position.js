@@ -8,3 +8,8 @@ Pos.prototype.add = function(pos) {
   this.y = this.y + pos.y;
   return this;
 }
+
+
+Pos.newRand = function(width, height) {
+  return new Pos(Math.floor(Math.random() * width), Math.floor(Math.random() * height))
+}
