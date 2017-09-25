@@ -5,6 +5,7 @@ function CanvasApp(div_id) {
   var can = document.getElementById(div_id);
   this.h = parseInt(can.style.height);
   this.w = parseInt(can.style.width);
+  this.sizePos = new Pos(this.w, this.h);
   can.height = this.h;
   can.width = this.w;
   this.avatar = []
@@ -16,8 +17,9 @@ function CanvasApp(div_id) {
   var rad = 20
   this.avatar = new DFlower(pos, rad, randomColor(), randomColor(), 10);
   this.lastClick = pos; // Hacky this sets the thing to move to its own pos
-
-  this.genDots(20);
+  
+  this.dotList = new DotList(10, 20, this.sizePos)
+  this.dotList.genRand(20);
 
   caller = this
   caller.iterateView();
@@ -35,16 +37,18 @@ CanvasApp.prototype.getRandPos = function() {
   return new Pos(Math.random() * this.w, Math.random() * this.h);
 }
 CanvasApp.prototype.renderView = function() {
+  console.log(this.dotList.list.length);
   this.ctx.fillStyle = "#ffffff";
   this.ctx.fillRect(0, 0, this.w, this.h)
-  this.avatar.draw(this.ctx)
-  for(var i in this.dots) this.dots[i].draw(this.ctx);
+  this.avatar.draw(this.ctx);
+  this.dotList.draw(this.ctx);
 }
 CanvasApp.prototype.setLastClick = function(clickPos) {
   this.lastClick = clickPos;
 }
 CanvasApp.prototype.iterateView = function() {
-  hitCheckAvatar(this.avatar, this.dots);
+  console.log(this.dotList);
+  hitCheckAvatar(this.avatar, this.dotList);
   try {
      if(this.lastClick != null) this.avatar.addUpdate( chasePoint(this.lastClick, 5) );
   } catch(e) {
@@ -55,18 +59,10 @@ CanvasApp.prototype.iterateView = function() {
   } catch(e) {
     console.log("I could not update this thing");
   }
-  if(this.dots.length == 0) this.genDots(20);
-}
-CanvasApp.prototype.genDots = function(number) {
-  this.dots = [];
-  for(var i = 0; i < number; i++) {
-    var colo = randomColor();
-    var size = magnitudeNumber(15);
-    var pos = this.getRandPos();
-    this.dots.push( new Dot(pos, size, colo) );
+  if(this.dotList.empty()) {
+     this.dotList.genRand(20);
   }
 }
-
 
 function getRadians(degrees) {
   return (Math.PI * degrees) / 180;
@@ -112,9 +108,12 @@ function hitCheckAvatar(avatar, list) {
    av_pos = avatar.pos
    av_rad = avatar.rad
 
-   for(var i = list.length - 1; i >= 0; i--) {
-     if(hitCheckTwo(av_pos, av_rad, list[i].pos, list[i].rad))
-       list.splice(i, 1);
+   for(var i = list.len - 1; i >= 0; i--) {
+     var other = list.at(i);
+     console.log(other);
+     // we make a hefty assumption about what the list returns.
+     if(hitCheckTwo(av_pos, av_rad, other.pos, other.rad))
+       list.removeIndex(i);
    }
 }
 function hitCheckTwo(firstPos, firstRad, secondPos, secondRad) {
