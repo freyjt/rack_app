@@ -108,9 +108,8 @@ function hitCheckAvatar(avatar, list) {
    av_pos = avatar.pos
    av_rad = avatar.rad
 
-   for(var i = list.len - 1; i >= 0; i--) {
+   for(var i = list.len() - 1; i >= 0; i--) {
      var other = list.at(i);
-     console.log(other);
      // we make a hefty assumption about what the list returns.
      if(hitCheckTwo(av_pos, av_rad, other.pos, other.rad))
        list.removeIndex(i);
