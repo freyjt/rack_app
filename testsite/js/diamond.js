@@ -20,7 +20,7 @@ Trig.prototype.cos = function(d) {
   if(Number.isInteger(d))
     return this.cos[d % 360];
   else
-    return Math.sin(d);
+    return Math.cos(d);
 }
 
 

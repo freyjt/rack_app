@@ -11,7 +11,6 @@ function CanvasApp(div_id) {
   this.avatar = []
   can.style.border = "2px solid blue";
   this.ctx = can.getContext('2d');
-
   //starting pos of avatar
   var pos = this.getRandPos();
   var rad = 20
@@ -37,7 +36,6 @@ CanvasApp.prototype.getRandPos = function() {
   return new Pos(Math.random() * this.w, Math.random() * this.h);
 }
 CanvasApp.prototype.renderView = function() {
-  console.log(this.dotList.list.length);
   this.ctx.fillStyle = "#ffffff";
   this.ctx.fillRect(0, 0, this.w, this.h)
   this.avatar.draw(this.ctx);
@@ -47,10 +45,10 @@ CanvasApp.prototype.setLastClick = function(clickPos) {
   this.lastClick = clickPos;
 }
 CanvasApp.prototype.iterateView = function() {
-  console.log(this.dotList);
   hitCheckAvatar(this.avatar, this.dotList);
   try {
      if(this.lastClick != null) this.avatar.addUpdate( chasePoint(this.lastClick, 5) );
+     this.avatar.addUpdate( spinFunction(5) );
   } catch(e) {
     console.log("I could not add a callback")
   }
@@ -58,6 +56,7 @@ CanvasApp.prototype.iterateView = function() {
     this.avatar.update();
   } catch(e) {
     console.log("I could not update this thing");
+    console.log(e);
   }
   if(this.dotList.empty()) {
      this.dotList.genRand(20);
@@ -86,8 +85,6 @@ function magnitudeNumber(mag) {
 // Assume that the object in question has a 'pos' property
 //  maxDist would be nice to be metho
 function chasePoint(chasePos, moveDist) {
-  // update this.pos on the caller object
-  //   we could pass a this to this function if we can't get this working like this.
   return function(caller) {
     p_theta = Math.atan2(caller.pos.y - chasePos.y, chasePos.x - caller.pos.x);
     distance = Math.sqrt(Math.pow(caller.pos.x - chasePos.x, 2) + Math.pow(caller.pos.y - chasePos.y, 2))
@@ -101,10 +98,19 @@ function chasePoint(chasePos, moveDist) {
     caller.pos = new Pos(new_x, new_y)
   }
 }
+function spinFunction(iterationSpin) {
+  return function(caller) {
+    try {
+      caller.totalSpin = (caller.totalSpin + iterationSpin) % 360;
+    } catch(e) {
+      console.log("Couldn't spin it brah, check the 'cept");
+      console.log(e);
+    }
+  }
+}
 
 // we assume both are round
 function hitCheckAvatar(avatar, list) {
-   // We need to eliminate from the list. does passing it allow us to do that?
    av_pos = avatar.pos
    av_rad = avatar.rad
 

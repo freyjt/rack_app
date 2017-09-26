@@ -15,26 +15,17 @@ function DFlower(pos, rad, petal_f, stamen_f, spin) {
   this.totalSpin = 0.0;
   this.form();
   this.updates = []
-}
-DFlower.prototype.draw = function(ctx) {
-  this.dot.draw(ctx)
-  for(var i in this.petals) {
-    this.petals[i].draw(ctx);
+  for(var i in flowerMix) {
+    if(flowerMix.hasOwnProperty(i))
+      this[i] = flowerMix[i];
   }
 }
-DFlower.prototype.update = function( ) {
-  this.totalSpin = this.totalSpin + this.spin
-  // Call all updates, then discard
-  for(var i = 0; i < this.updates.length; i++) this.updates[i](this);
-  this.updates = []
-  this.form()
-}
 DFlower.prototype.form = function() {
-  this.petals = [];
+  this.components = [];
   for(var i = 0; i < (360 / this.rot); i++) {
-    this.petals.push(new Diamond(this.pos, this.d_d, this.d_len, this.d_w, this.d__l, getRadians((this.rot * i) + this.totalSpin), this.petal_f))
+    this.components.push(new Diamond(this.pos, this.d_d, this.d_len, this.d_w, this.d__l, getRadians((this.rot * i) + this.totalSpin), this.petal_f))
   } 
-  this.dot = new Dot(this.pos, this.rad / 4, this.stamen_f);
+  this.components.push(new Dot(this.pos, this.rad / 4, this.stamen_f));
 }
 DFlower.prototype.addUpdate = function(updateCallback) {
   this.updates.push(updateCallback);
