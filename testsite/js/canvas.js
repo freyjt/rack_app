@@ -1,3 +1,8 @@
+var avatar = {
+  dotsKilled: 0,
+  speed: 6
+}
+
 // Constructor
 function CanvasApp(div_id) {
   var interval_ms = 100;
@@ -47,7 +52,8 @@ CanvasApp.prototype.setLastClick = function(clickPos) {
 CanvasApp.prototype.iterateView = function() {
   hitCheckAvatar(this.avatar, this.dotList);
   try {
-     if(this.lastClick != null) this.avatar.addUpdate( chasePoint(this.lastClick, 5) );
+     if(this.lastClick != null) this.avatar.addUpdate( chasePoint(this.lastClick, avatar.speed) );
+     console.log(avatar.speed);
      this.avatar.addUpdate( spinFunction(5) );
   } catch(e) {
     console.log("I could not add a callback")
@@ -62,6 +68,7 @@ CanvasApp.prototype.iterateView = function() {
      this.dotList.genRand(20);
   }
 }
+
 
 function getRadians(degrees) {
   return (Math.PI * degrees) / 180;
@@ -95,7 +102,7 @@ function chasePoint(chasePos, moveDist) {
       new_x = caller.pos.x + (Math.cos(p_theta) * moveDist)
       new_y = caller.pos.y - (Math.sin(p_theta) * moveDist)
     } 
-    caller.pos = new Pos(new_x, new_y)
+    caller.pos = new Pos(new_x, new_y);
   }
 }
 function spinFunction(iterationSpin) {
@@ -117,8 +124,9 @@ function hitCheckAvatar(avatar, list) {
    for(var i = list.len() - 1; i >= 0; i--) {
      var other = list.at(i);
      // we make a hefty assumption about what the list returns.
-     if(hitCheckTwo(av_pos, av_rad, other.pos, other.rad))
+     if(hitCheckTwo(av_pos, av_rad, other.pos, other.rad)) {
        list.removeIndex(i);
+     }
    }
 }
 function hitCheckTwo(firstPos, firstRad, secondPos, secondRad) {
