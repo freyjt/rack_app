@@ -6,7 +6,8 @@ var avatar = {
 // Constructor
 function CanvasApp(div_id) {
   var interval_ms = 100;
-  this.ws = new WebSocket("ws://localhost:8889")
+  var ws_url = Document.getElementById("hostName").innerHTML
+  this.ws = new WebSocket(ws_url)
   var can = document.getElementById(div_id);
   this.h = parseInt(can.style.height);
   this.w = parseInt(can.style.width);
@@ -31,7 +32,7 @@ function CanvasApp(div_id) {
   intId = setInterval(function() {
     caller.iterateView();
     caller.renderView();
-  }, interval_ms);
+  }, interval_ms)
 
   can.onmouseup = function(e) {
     caller.lastClick = getXY(e, this);
@@ -52,8 +53,9 @@ CanvasApp.prototype.setLastClick = function(clickPos) {
 CanvasApp.prototype.iterateView = function() {
   hitCheckAvatar(this.avatar, this.dotList);
   try {
-     if(this.lastClick != null) this.avatar.addUpdate( chasePoint(this.lastClick, avatar.speed) );
-     console.log(avatar.speed);
+     if(this.lastClick != null) {
+       this.avatar.addUpdate( chasePoint(this.lastClick, this.ws) );
+     }
      this.avatar.addUpdate( spinFunction(5) );
   } catch(e) {
     console.log("I could not add a callback")
@@ -91,20 +93,19 @@ function magnitudeNumber(mag) {
 
 // Assume that the object in question has a 'pos' property
 //  maxDist would be nice to be metho
-function chasePoint(chasePos, moveDist) {
+function chasePoint(chasePos, ws) {
   return function(caller) {
-    p_theta = Math.atan2(caller.pos.y - chasePos.y, chasePos.x - caller.pos.x);
-    distance = Math.sqrt(Math.pow(caller.pos.x - chasePos.x, 2) + Math.pow(caller.pos.y - chasePos.y, 2))
-    if(distance < moveDist) {
-      new_x = chasePos.x;
-      new_y = chasePos.y;
-    } else {
-      new_x = caller.pos.x + (Math.cos(p_theta) * moveDist)
-      new_y = caller.pos.y - (Math.sin(p_theta) * moveDist)
-    } 
-    caller.pos = new Pos(new_x, new_y);
+    var message = { "why": "location",
+                    "what": { "posNow": caller.pos
+                              "posLate": chasePos }
+                  }
+    // @YOUAREHERE
+    new Promise(ws.send
   }
 }
+
+
+
 function spinFunction(iterationSpin) {
   return function(caller) {
     try {

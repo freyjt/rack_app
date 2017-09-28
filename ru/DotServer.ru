@@ -6,11 +6,13 @@ use Rack::Static, :urls => ["/testsite"]
 
 require 'json'
 require 'faye/websocket'
+require_relative 'classes/AngleResolve.rb'
 Faye::WebSocket.load_adapter('thin')
 
 COLORS = ['red', 'blue', 'green', 'yellow', 'orange']
 
 class MyApp
+   include AngleResolve
 
   def random_color()
     COLORS.sample
@@ -32,6 +34,13 @@ class MyApp
     return shapes
   end
 
+  def get_location(data)
+    my_pos = data[:posNow]
+    req_pos = data[:posLater]
+    max_dist = 10; # @TODO resolve this with an object that tracks the avatar.
+    AngleResolve::whereToGo(my_pos, req_pos, max_dist)
+  end
+
   def call(env)
     if Faye::WebSocket.websocket?(env)
       ws = Faye::WebSocket.new(env)
@@ -39,9 +48,10 @@ class MyApp
         puts "New websocket connection"
       end
       ws.on :message do |event|
-        puts event.data
-        dat = JSON.parse event.data
-        ws.send JSON.generate(generate_shapes(dat["height"], dat["width"], 299))
+        data = JSON.parse(event.data, :symbolize_names => true)
+        if(data[:why] == "location") 
+          ws.send JSON.generate(get_location(data[:what]))
+        end
       end
       ws.on :close do |event|
         puts "Socket closed"
