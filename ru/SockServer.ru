@@ -1,11 +1,10 @@
 #\ -w -E production
 use Rack::Reloader, 0
 
-# Serves static files, someday separate this logic
-use Rack::Static, :urls => ["/testsite"]
 
 require 'faye/websocket'
 Faye::WebSocket.load_adapter('thin')
+use Rack::Static, :urls => ["/testsite"]
 
 COLORS = ['red', 'blue', 'green', 'yellow', 'orange']
 

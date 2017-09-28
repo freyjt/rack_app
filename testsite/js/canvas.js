@@ -6,7 +6,7 @@ var avatar = {
 // Constructor
 function CanvasApp(div_id) {
   var interval_ms = 100;
-  var ws_url = Document.getElementById("hostName").innerHTML
+  var ws_url = document.getElementById("hostName").innerHTML
   this.ws = new WebSocket(ws_url)
   var can = document.getElementById(div_id);
   this.h = parseInt(can.style.height);
@@ -22,7 +22,7 @@ function CanvasApp(div_id) {
   var rad = 20
   this.avatar = new DFlower(pos, rad, randomColor(), randomColor(), 10);
   this.lastClick = pos; // Hacky this sets the thing to move to its own pos
-  
+  this.viewCounter = 0;
   this.dotList = new DotList(10, 20, this.sizePos)
   this.dotList.genRand(20);
 
@@ -51,10 +51,11 @@ CanvasApp.prototype.setLastClick = function(clickPos) {
   this.lastClick = clickPos;
 }
 CanvasApp.prototype.iterateView = function() {
+  this.viewCounter += 1; // @TODO this is a little hackey for sync. You can do better.
   hitCheckAvatar(this.avatar, this.dotList);
   try {
      if(this.lastClick != null) {
-       this.avatar.addUpdate( chasePoint(this.lastClick, this.ws) );
+       this.avatar.addUpdate( requestMove(this.lastClick, this.viewCounter, this.ws) );
      }
      this.avatar.addUpdate( spinFunction(5) );
   } catch(e) {
@@ -93,14 +94,20 @@ function magnitudeNumber(mag) {
 
 // Assume that the object in question has a 'pos' property
 //  maxDist would be nice to be metho
-function chasePoint(chasePos, ws) {
+function requestMove(chasePos, viewCounter, ws) {
   return function(caller) {
+    // @TODO we should not tell the server what our position is. We should let the server track that.
+    try {
     var message = { "why": "location",
-                    "what": { "posNow": caller.pos
-                              "posLate": chasePos }
+                    "requestNumber": viewCounter,
+                    "what": { "posNow": caller.pos,
+                              "posLater": chasePos }
                   }
-    // @YOUAREHERE
-    new Promise(ws.send
+    ws.send(JSON.stringify(message));
+    } catch(e) {
+      console.log("I got an exception in request move. Here it is:")
+      console.log(e);
+    }
   }
 }
 

@@ -35,10 +35,11 @@ class MyApp
   end
 
   def get_location(data)
+    puts data
     my_pos = data[:posNow]
     req_pos = data[:posLater]
     max_dist = 10; # @TODO resolve this with an object that tracks the avatar.
-    AngleResolve::whereToGo(my_pos, req_pos, max_dist)
+    AngleResolve.whereToGo(my_pos, req_pos, max_dist)
   end
 
   def call(env)
