@@ -37,6 +37,23 @@ function CanvasApp(div_id) {
   can.onmouseup = function(e) {
     caller.lastClick = getXY(e, this);
   }
+  this.position = {} 
+
+  // The internet says all execution is atomic....
+  // Ideally this will stack up as we get more data in.
+  //   (but not necessarily) 
+  //   We could frame these with a timestamp, but we'd have to
+  //    sort on the timestamp everytime we wanted to use it
+  //
+  //    do js objs eat memory with additional keys? no. So key by timestamp?
+  //    
+  this.ws.onmessage = function(data) {
+    var obj = JSON.parse(data);
+    if(obj.why === "location")
+      this.position[Date.now()] = obj.what.posNow;
+    else
+      console.log("I don't know what's wrong");
+  }
 }
 CanvasApp.prototype.getRandPos = function() {
   return new Pos(Math.random() * this.w, Math.random() * this.h);
@@ -72,6 +89,17 @@ CanvasApp.prototype.iterateView = function() {
   }
 }
 
+// @TODO define how many to preserve
+// @TODO move this and all other positions to an avatar object.
+// @TODO doesn't seem like this should be the fastest way, does it?
+CanvasApp.prototype.cleanPosition = function() {
+  if(this.position.keys.length < 5) return;
+  key_arr = this.position.keys
+  first_half = key_arr.slice(0, Math.floor(key_arr.length / 2));
+  for(var i in first_half) {
+    this.positions.keys.delete first_half[i]
+  } 
+}
 
 function getRadians(degrees) {
   return (Math.PI * degrees) / 180;
@@ -184,5 +212,5 @@ getXY = function(e, eCaller) {
 }
 // end cited material
 
-
 function canvas_main() { new CanvasApp("canvas") }
+
