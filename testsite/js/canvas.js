@@ -5,7 +5,7 @@ var avatar = {
 
 // Constructor
 function CanvasApp(div_id) {
-  var interval_ms = 100;
+  var interval_ms = 50;
   var ws_url = document.getElementById("hostName").innerHTML
   this.ws = new WebSocket(ws_url)
   var can = document.getElementById(div_id);
@@ -37,24 +37,10 @@ function CanvasApp(div_id) {
   can.onmouseup = function(e) {
     caller.lastClick = getXY(e, this);
   }
-  this.position = {} 
-
-  // The internet says all execution is atomic....
-  // Ideally this will stack up as we get more data in.
-  //   (but not necessarily) 
-  //   We could frame these with a timestamp, but we'd have to
-  //    sort on the timestamp everytime we wanted to use it
-  //
-  //    do js objs eat memory with additional keys? no. So key by timestamp?
-  //    
-  this.ws.onmessage = function(data) {
-    var obj = JSON.parse(data);
-    if(obj.why === "location")
-      this.position[Date.now()] = obj.what.posNow;
-    else
-      console.log("I don't know what's wrong");
-  }
+  this.position = {};
+  this.ws.onmessage = function(m) { messageHandler(m, caller); }
 }
+
 CanvasApp.prototype.getRandPos = function() {
   return new Pos(Math.random() * this.w, Math.random() * this.h);
 }
@@ -75,8 +61,10 @@ CanvasApp.prototype.iterateView = function() {
        this.avatar.addUpdate( requestMove(this.lastClick, this.viewCounter, this.ws) );
      }
      this.avatar.addUpdate( spinFunction(5) );
+     this.avatar.addUpdate( makeLocationCurrent(this.position)) 
   } catch(e) {
     console.log("I could not add a callback")
+    console.log(e);
   }
   try {
     this.avatar.update();
@@ -88,8 +76,6 @@ CanvasApp.prototype.iterateView = function() {
      this.dotList.genRand(20);
   }
 }
-
-// @TODO define how many to preserve
 // @TODO move this and all other positions to an avatar object.
 // @TODO doesn't seem like this should be the fastest way, does it?
 CanvasApp.prototype.cleanPosition = function() {
@@ -97,7 +83,7 @@ CanvasApp.prototype.cleanPosition = function() {
   key_arr = this.position.keys
   first_half = key_arr.slice(0, Math.floor(key_arr.length / 2));
   for(var i in first_half) {
-    this.positions.keys.delete first_half[i]
+    this.positions.keys.delete(first_half[i]);
   } 
 }
 
@@ -152,9 +138,22 @@ function spinFunction(iterationSpin) {
   }
 }
 
+function makeLocationCurrent(positionList) {
+  return function(caller) {
+    try {
+    var keys = (positionList != null) ? Object.keys(positionList) : [];
+    var mostCurrent = keys[ keys.length - 1 ];
+    caller.pos = (mostCurrent != null) ? positionList[mostCurrent] : caller.pos;
+    } catch(e) {
+      console.log(e)
+    }
+  }
+}
+
 // we assume both are round
+// @TODO implement server side
 function hitCheckAvatar(avatar, list) {
-   av_pos = avatar.pos
+   var av_pos = avatar.pos
    av_rad = avatar.rad
 
    for(var i = list.len() - 1; i >= 0; i--) {

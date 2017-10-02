@@ -51,7 +51,9 @@ class MyApp
       ws.on :message do |event|
         data = JSON.parse(event.data, :symbolize_names => true)
         if(data[:why] == "location") 
-          ws.send JSON.generate(get_location(data[:what]))
+          new_location = get_location data[:what]
+          wire_object = JSON.generate( { :why => "location", :what => new_location } )
+          ws.send wire_object
         end
       end
       ws.on :close do |event|
