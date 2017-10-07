@@ -21,5 +21,12 @@ class Vector
     add_vector Vector.new(x, y)
   end
 
+  def magnitude()
+    return Math.sqrt(@x**2 + @y**2)
+  end
+
+  def angle()
+    return Math.atan2(@y, @x)
+  end
 end
 
