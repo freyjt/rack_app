@@ -1,3 +1,5 @@
 Gemfile.lock
 testsite/js/external_lib/*.js
 .rspec
+
+server/coverage

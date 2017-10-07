@@ -1,5 +1,4 @@
-require_relative 'spec_helper.rb'
-
+require_relative 'spec_helper.rb' 
 
 describe Vector, '#initialize' do
 
@@ -47,6 +46,21 @@ describe Vector, "#add_dims" do
     init_vec.add_dims(float_x, float_y)
     expect(init_vec.x).to eq sum_x
     expect(init_vec.y).to eq sum_y
+  end
+
+end
+
+describe Vector, "#add_vector" do
+  it "adds itself" do
+    init_x = 3
+    init_y = 5
+
+    init_vec = Vector.new(init_x, init_y)
+
+    init_vec.add_vector(init_vec)
+    expect(init_vec.x).to eq(init_x * 2)
+    expect(init_vec.y).to eq(init_y * 2)
+
   end
 
 end

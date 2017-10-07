@@ -14,7 +14,8 @@
 #
 #
 # My Requires
-
+require 'simplecov'
+SimpleCov.start
 require_relative '../classes/avatar.rb'
 require_relative '../classes/vector.rb'
 #
