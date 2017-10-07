@@ -16,6 +16,7 @@
 # My Requires
 
 require_relative '../classes/avatar.rb'
+require_relative '../classes/vector.rb'
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
