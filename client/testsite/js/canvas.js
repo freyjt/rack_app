@@ -1,7 +1,3 @@
-var avatar = {
-  dotsKilled: 0,
-  speed: 6
-}
 
 // Constructor
 function CanvasApp(div_id) {
@@ -38,7 +34,9 @@ function CanvasApp(div_id) {
     caller.lastClick = getXY(e, this);
   }
   this.position = {};
-  this.ws.onmessage = function(m) { messageHandler(m, caller); }
+  this.ws.onmessage = function(m) {
+     messageHandler(m, caller);
+  }
 }
 
 CanvasApp.prototype.getRandPos = function() {
@@ -54,11 +52,10 @@ CanvasApp.prototype.setLastClick = function(clickPos) {
   this.lastClick = clickPos;
 }
 CanvasApp.prototype.iterateView = function() {
-  this.viewCounter += 1; // @TODO this is a little hackey for sync. You can do better.
   hitCheckAvatar(this.avatar, this.dotList);
   try {
      if(this.lastClick != null) {
-       this.avatar.addUpdate( requestMove(this.lastClick, this.viewCounter, this.ws) );
+       this.avatar.addUpdate( requestMove(this.lastClick, Date.now(), this.ws) );
      }
      this.avatar.addUpdate( spinFunction(5) );
      this.avatar.addUpdate( makeLocationCurrent(this.position)) 
@@ -110,7 +107,6 @@ function magnitudeNumber(mag) {
 //  maxDist would be nice to be metho
 function requestMove(chasePos, viewCounter, ws) {
   return function(caller) {
-    // @TODO we should not tell the server what our position is. We should let the server track that.
     try {
     var message = { "why": "location",
                     "requestNumber": viewCounter,

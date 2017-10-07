@@ -1,5 +1,4 @@
 function messageHandler(message, caller) {
-  console.log(message);
   var message_obj = JSON.parse(message.data);
   if(message_obj.why === "location")
     caller.position[Date.now()] = message_obj.what;
